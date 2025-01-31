@@ -38,7 +38,7 @@ export class DialogComponent implements OnInit {
     public dialogRef: MatDialogRef<DialogComponent>,
     @Inject(MAT_DIALOG_DATA)
     public data: {
-      uuid: string;
+      id: string;
       date: Date;
       title: string;
       startTime: string;
@@ -59,17 +59,17 @@ export class DialogComponent implements OnInit {
         date: this.form.controls['date'].value,
         startTime: this.form.controls['startTime'].value,
         endTime: this.form.controls['endTime'].value,
-        uuid: this.data.uuid,
+        uuid: this.data.id,
       };
       this.dialogRef.close(data);
     }
   }
 
-  onDeleteClick(): void {
-    this.dialogRef.close({ remove: true, uuid: this.data.uuid });
+  public onDeleteClick(): void {
+    this.dialogRef.close({ remove: true, uuid: this.data.id });
   }
 
-  timeRangeValidator: ValidatorFn = (
+  public timeRangeValidator: ValidatorFn = (
     control: AbstractControl
   ): ValidationErrors | null => {
     const startTime = control.get('startTime')?.value;

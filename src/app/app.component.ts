@@ -9,6 +9,4 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
-  title = 'angular-calendar-app';
-}
+export class AppComponent {}
