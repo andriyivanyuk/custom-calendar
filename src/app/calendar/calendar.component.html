@@ -18,7 +18,8 @@
       <mat-button-toggle-group
         class="calendar-view-toggle"
         name="currentView"
-        (change)="switchToView($event.value)">
+        (change)="switchToView($event.value)"
+      >
         <mat-button-toggle [checked]="true" [value]="CalendarView.Month">
           Month
         </mat-button-toggle>
@@ -33,7 +34,7 @@
         <button mat-icon-button (click)="next()">
           <mat-icon>chevron_right</mat-icon>
         </button>
-        <button mat-flat-button (click)="selectDate()">Add Appointment</button>
+        <button mat-flat-button (click)="openDialog()">Add Appointment</button>
       </div>
     </div>
 
@@ -54,18 +55,20 @@
             cdkDropList
             (cdkDropListDropped)="drop($event, date)"
             [cdkDropListData]="appointments"
-            [class.today]="isToday(date)">
+            [class.today]="isToday(date)"
+          >
             <div class="cell-overlay" (click)="selectDate(date)"></div>
             <div class="date">{{ date.getDate() }}</div>
             <div class="appointments">
-              @for (appointment of appointments; track appointment.id) { @if
-              (isSameDate(appointment.date, date)) {
+              @for (appointment of appointments; track appointment.id) {
+              @if(isSameDate(appointment.date, date)) {
               <div
                 class="appointment"
                 cdkDrag
                 cdkDragHandle
                 [cdkDragData]="appointment"
-                (click)="editAppointment(appointment, $event)">
+                (click)="editAppointment(appointment, $event)"
+              >
                 <span>{{ appointment.title }}</span>
               </div>
               } }
@@ -96,11 +99,12 @@
           <td
             cdkDropList
             (cdkDropListDropped)="drop($event, monthDays[i], timeSlot)"
-            [cdkDropListData]="appointments">
+            [cdkDropListData]="appointments"
+          >
             <div
               class="cell-overlay"
-              (click)="selectDate(monthDays[i], timeSlot)">
-            </div>
+              (click)="selectDate(monthDays[i], timeSlot)"
+            ></div>
             @for (appointment of getAppointmentsForDateTime(monthDays[i],
             timeSlot); track appointment.id) {
             <div
@@ -108,7 +112,8 @@
               cdkDrag
               cdkDragHandle
               [cdkDragData]="appointment"
-              (click)="editAppointment(appointment, $event)">
+              (click)="editAppointment(appointment, $event)"
+            >
               <span>{{ appointment.title }}</span>
             </div>
             }
@@ -129,11 +134,12 @@
           <td
             cdkDropList
             (cdkDropListDropped)="drop($event, monthDays[0], slot)"
-            [cdkDropListData]="appointments">
+            [cdkDropListData]="appointments"
+          >
             <div
               class="cell-overlay"
-              (click)="selectDate(monthDays[0], slot)">
-            </div>
+              (click)="selectDate(monthDays[0], slot)"
+            ></div>
             @for (appointment of getAppointmentsForDateTime(monthDays[0], slot);
             track appointment.id) {
             <div
@@ -141,7 +147,8 @@
               cdkDrag
               cdkDragHandle
               [cdkDragData]="appointment"
-              (click)="editAppointment(appointment, $event)">
+              (click)="editAppointment(appointment, $event)"
+            >
               <span>{{ appointment.title }}</span>
             </div>
             }

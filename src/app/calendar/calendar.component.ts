@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { DialogComponent } from '../dialog/dialog.component';
-import { Appointment } from '../interfaces/appointment';
 import { CalendarView } from '../enums/calendar-view.enum';
+import { Appointment } from '../interfaces/appointment';
+import { DialogComponent } from '../dialog/dialog.component';
 
 @Component({
   selector: 'app-calendar',
@@ -12,7 +12,7 @@ import { CalendarView } from '../enums/calendar-view.enum';
   styleUrls: ['./calendar.component.scss'],
   standalone: false,
 })
-export class CalendarComponent implements OnInit {
+export class CalendarComponent {
   viewDate: Date = new Date();
   selectedDate: Date | null = null;
   selectedStartTime: string | undefined;
@@ -26,9 +26,12 @@ export class CalendarComponent implements OnInit {
 
   public CalendarView = CalendarView;
 
-  constructor(public dialog: MatDialog) {}
+  constructor(public dialog: MatDialog) {
+    this.generateView(this.currentView, this.viewDate);
+    this.generateTimeSlots();
+  }
 
-  public generateView(view: CalendarView, date: Date) {
+  generateView(view: CalendarView, date: Date) {
     switch (view) {
       case CalendarView.Month:
         this.generateMonthView(date);
@@ -44,7 +47,7 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  public generateMonthView(date: Date) {
+  generateMonthView(date: Date) {
     const start = new Date(date.getFullYear(), date.getMonth(), 1);
     const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     this.weeks = [];
@@ -85,7 +88,7 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  public generateWeekView(date: Date) {
+  generateWeekView(date: Date) {
     const startOfWeek = this.startOfWeek(date);
     this.monthDays = [];
 
@@ -96,30 +99,30 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  public generateDayView(date: Date) {
+  generateDayView(date: Date) {
     this.monthDays = [date];
   }
 
-  public generateTimeSlots() {
+  generateTimeSlots() {
     for (let hour = 0; hour <= 24; hour++) {
       const time = hour < 10 ? `0${hour}:00` : `${hour}:00`;
       this.timeSlots.push(time);
     }
   }
 
-  public switchToView(view: CalendarView) {
+  switchToView(view: CalendarView) {
     this.currentView = view;
     this.generateView(this.currentView, this.viewDate);
   }
 
-  public startOfWeek(date: Date): Date {
+  startOfWeek(date: Date): Date {
     const start = new Date(date);
     const day = start.getDay();
     const diff = start.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(start.setDate(diff));
   }
 
-  public previous() {
+  previous() {
     if (this.currentView === 'month') {
       this.viewDate = new Date(
         this.viewDate.setMonth(this.viewDate.getMonth() - 1)
@@ -138,7 +141,7 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  public next() {
+  next() {
     if (this.currentView === 'month') {
       this.viewDate = new Date(
         this.viewDate.setMonth(this.viewDate.getMonth() + 1)
@@ -157,7 +160,7 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  public isToday(date: Date): boolean {
+  isToday(date: Date): boolean {
     const today = new Date();
     return (
       date.getDate() === today.getDate() &&
@@ -166,7 +169,7 @@ export class CalendarComponent implements OnInit {
     );
   }
 
-  public isSelected(date: Date): boolean {
+  isSelected(date: Date): boolean {
     if (!this.selectedDate) {
       return false;
     }
@@ -195,14 +198,39 @@ export class CalendarComponent implements OnInit {
     this.openDialog();
   }
 
-  public addAppointment(
+  generateUUID(): string {
+    let d = new Date().getTime(); //Timestamp
+    let d2 =
+      (typeof performance !== 'undefined' &&
+        performance.now &&
+        performance.now() * 1000) ||
+      0;
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      /[xy]/g,
+      function (c) {
+        let r = Math.random() * 16; //random number between 0 and 16
+        if (d > 0) {
+          //Use timestamp until depleted
+          r = (d + r) % 16 | 0;
+          d = Math.floor(d / 16);
+        } else {
+          //Use microseconds since page-load if supported
+          r = (d2 + r) % 16 | 0;
+          d2 = Math.floor(d2 / 16);
+        }
+        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+      }
+    );
+  }
+
+  addAppointment(
     date: Date,
     title: string,
     startTime: string,
     endTime: string
   ) {
     this.appointments.push({
-      id: Date.now().toString(),
+      id: this.generateUUID(),
       date,
       title,
       startTime,
@@ -210,7 +238,7 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  public deleteAppointment(appointment: Appointment, event: Event) {
+  deleteAppointment(appointment: Appointment, event: Event) {
     event.stopPropagation();
     const index = this.appointments.indexOf(appointment);
     if (index > -1) {
@@ -218,7 +246,7 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  public openDialog(): void {
+  openDialog(): void {
     const hour = new Date().getHours();
     const minutes = new Date().getMinutes();
     const h = hour < 10 ? `0${hour}` : hour;
@@ -246,7 +274,7 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  public getAppointmentsForDate(day: Date, timeSlots: string[]) {
+  getAppointmentsForDate(day: Date, timeSlots: string[]) {
     return this.appointments
       .filter((appointment) => {
         return this.isSameDate(appointment.date, day);
@@ -258,7 +286,7 @@ export class CalendarComponent implements OnInit {
       });
   }
 
-  public drop(event: CdkDragDrop<Appointment[]>, date: Date, slot?: string) {
+  drop(event: CdkDragDrop<Appointment[]>, date: Date, slot?: string) {
     const movedAppointment = event.item.data;
     movedAppointment.date = date;
     if (slot) {
@@ -267,22 +295,19 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  public viewToday(): void {
+  viewToday(): void {
     this.viewDate = new Date();
     this.generateMonthView(this.viewDate);
   }
 
-  public isCurrentMonth(date: Date): boolean {
+  isCurrentMonth(date: Date): boolean {
     return (
       date.getMonth() === this.viewDate.getMonth() &&
       date.getFullYear() === this.viewDate.getFullYear()
     );
   }
 
-  public getAppointmentsForDateTime(
-    date: Date,
-    timeSlot: string
-  ): Appointment[] {
+  getAppointmentsForDateTime(date: Date, timeSlot: string): Appointment[] {
     const appointmentsForDateTime: Appointment[] = this.appointments.filter(
       (appointment) =>
         this.isSameDate(appointment.date, date) &&
@@ -293,7 +318,15 @@ export class CalendarComponent implements OnInit {
     return appointmentsForDateTime;
   }
 
-  public editAppointment(appointment: Appointment, event: Event) {
+  getRandomColor(): string {
+    const r = Math.floor(Math.random() * 256);
+    const g = Math.floor(Math.random() * 256);
+    const b = Math.floor(Math.random() * 256);
+    const a = 0.4;
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  editAppointment(appointment: Appointment, event: Event) {
     event.preventDefault();
     const dialogRef = this.dialog.open(DialogComponent, {
       width: '500px',
@@ -313,10 +346,5 @@ export class CalendarComponent implements OnInit {
         }
       }
     });
-  }
-
-  ngOnInit(): void {
-    this.generateView(this.currentView, this.viewDate);
-    this.generateTimeSlots();
   }
 }

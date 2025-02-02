@@ -10,11 +10,14 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DialogComponent } from '../dialog/dialog.component';
+import { AppointmentService } from '../services/appointment.service';
+import { CreateViewService } from '../services/create-view.service';
 
 const routes: Routes = [{ path: '', component: CalendarComponent }];
 
 @NgModule({
   declarations: [CalendarComponent],
+  providers: [AppointmentService, CreateViewService],
   imports: [
     CommonModule,
     MatButtonModule,
