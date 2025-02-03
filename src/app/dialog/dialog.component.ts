@@ -32,7 +32,7 @@ import { CommonModule } from '@angular/common';
   ],
 })
 export class DialogComponent implements OnInit {
-  form!: FormGroup;
+  appointmentForm!: FormGroup;
 
   constructor(
     public dialogRef: MatDialogRef<DialogComponent>,
@@ -48,25 +48,37 @@ export class DialogComponent implements OnInit {
     private formBuilder: FormBuilder
   ) {}
 
+  ngOnInit(): void {
+    this.appointmentForm = this.formBuilder.group(
+      {
+        title: [this.data.title || '', Validators.required],
+        date: [this.data.date, Validators.required],
+        startTime: [this.data.startTime || '', Validators.required],
+        endTime: [this.data.startTime || '', Validators.required],
+      },
+      { validators: this.timeRangeValidator }
+    );
+  }
+
   public close(): void {
     this.dialogRef.close();
   }
 
-  public onSaveClick(): void {
-    if (this.form.valid) {
+  public onSave(): void {
+    if (this.appointmentForm.valid) {
       const data = {
-        title: this.form.controls['title'].value,
-        date: this.form.controls['date'].value,
-        startTime: this.form.controls['startTime'].value,
-        endTime: this.form.controls['endTime'].value,
-        uuid: this.data.id,
+        title: this.appointmentForm.controls['title'].value,
+        date: this.appointmentForm.controls['date'].value,
+        startTime: this.appointmentForm.controls['startTime'].value,
+        endTime: this.appointmentForm.controls['endTime'].value,
+        id: this.data.id,
       };
       this.dialogRef.close(data);
     }
   }
 
-  public onDeleteClick(): void {
-    this.dialogRef.close({ remove: true, uuid: this.data.id });
+  public onDelete(): void {
+    this.dialogRef.close({ remove: true, id: this.data.id });
   }
 
   public timeRangeValidator: ValidatorFn = (
@@ -92,16 +104,4 @@ export class DialogComponent implements OnInit {
     }
     return null;
   };
-
-  ngOnInit(): void {
-    this.form = this.formBuilder.group(
-      {
-        title: [this.data.title || '', Validators.required],
-        date: [this.data.date, Validators.required],
-        startTime: [this.data.startTime || '', Validators.required],
-        endTime: [this.data.startTime || '', Validators.required],
-      },
-      { validators: this.timeRangeValidator }
-    );
-  }
 }

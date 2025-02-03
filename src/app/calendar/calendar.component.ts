@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { CalendarView } from '../enums/calendar-view.enum';
-import { Appointment } from '../interfaces/appointment';
 import { DialogComponent } from '../dialog/dialog.component';
+import { Appointment } from '../interfaces/appointment';
+import { AppointmentService } from '../services/appointment.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-calendar',
@@ -12,42 +13,32 @@ import { DialogComponent } from '../dialog/dialog.component';
   styleUrls: ['./calendar.component.scss'],
   standalone: false,
 })
-export class CalendarComponent {
-  viewDate: Date = new Date();
-  selectedDate: Date | null = null;
-  selectedStartTime: string | undefined;
+export class CalendarComponent implements OnInit {
   weekDays: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  monthDays: Date[] = [];
-  appointments: Appointment[] = [];
-  currentView: CalendarView = CalendarView.Month;
-  timeSlots: string[] = [];
 
+  viewDate: Date = new Date();
+  monthDays: Date[] = [];
+  selectedDate: Date | null = null;
   weeks: Date[][] = [];
 
-  public CalendarView = CalendarView;
+  selectedStartTime: string | undefined;
+  timeSlots: string[] = [];
 
-  constructor(public dialog: MatDialog) {
-    this.generateView(this.currentView, this.viewDate);
+  appointments$!: Observable<Appointment[]>;
+
+  constructor(
+    public dialog: MatDialog,
+    public appointmentService: AppointmentService
+  ) {
+    this.appointments$ = this.appointmentService.appointments$;
+  }
+
+  ngOnInit(): void {
+    this.generateMonthView(this.viewDate);
     this.generateTimeSlots();
   }
 
-  generateView(view: CalendarView, date: Date) {
-    switch (view) {
-      case CalendarView.Month:
-        this.generateMonthView(date);
-        break;
-      case CalendarView.Week:
-        this.generateWeekView(date);
-        break;
-      case CalendarView.Day:
-        this.generateDayView(date);
-        break;
-      default:
-        this.generateMonthView(date);
-    }
-  }
-
-  generateMonthView(date: Date) {
+  public generateMonthView(date: Date) {
     const start = new Date(date.getFullYear(), date.getMonth(), 1);
     const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     this.weeks = [];
@@ -88,79 +79,35 @@ export class CalendarComponent {
     }
   }
 
-  generateWeekView(date: Date) {
-    const startOfWeek = this.startOfWeek(date);
-    this.monthDays = [];
-
-    for (let day = 0; day < 7; day++) {
-      const weekDate = new Date(startOfWeek);
-      weekDate.setDate(startOfWeek.getDate() + day);
-      this.monthDays.push(weekDate);
-    }
-  }
-
-  generateDayView(date: Date) {
-    this.monthDays = [date];
-  }
-
-  generateTimeSlots() {
+  public generateTimeSlots() {
     for (let hour = 0; hour <= 24; hour++) {
       const time = hour < 10 ? `0${hour}:00` : `${hour}:00`;
       this.timeSlots.push(time);
     }
   }
 
-  switchToView(view: CalendarView) {
-    this.currentView = view;
-    this.generateView(this.currentView, this.viewDate);
-  }
-
-  startOfWeek(date: Date): Date {
+  public startOfWeek(date: Date): Date {
     const start = new Date(date);
     const day = start.getDay();
     const diff = start.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(start.setDate(diff));
   }
 
-  previous() {
-    if (this.currentView === 'month') {
-      this.viewDate = new Date(
-        this.viewDate.setMonth(this.viewDate.getMonth() - 1)
-      );
-      this.generateMonthView(this.viewDate);
-    } else if (this.currentView === 'week') {
-      this.viewDate = new Date(
-        this.viewDate.setDate(this.viewDate.getDate() - 7)
-      );
-      this.generateWeekView(this.viewDate);
-    } else {
-      this.viewDate = new Date(
-        this.viewDate.setDate(this.viewDate.getDate() - 1)
-      );
-      this.generateDayView(this.viewDate);
-    }
+  public previous() {
+    this.viewDate = new Date(
+      this.viewDate.setMonth(this.viewDate.getMonth() - 1)
+    );
+    this.generateMonthView(this.viewDate);
   }
 
-  next() {
-    if (this.currentView === 'month') {
-      this.viewDate = new Date(
-        this.viewDate.setMonth(this.viewDate.getMonth() + 1)
-      );
-      this.generateMonthView(this.viewDate);
-    } else if (this.currentView === 'week') {
-      this.viewDate = new Date(
-        this.viewDate.setDate(this.viewDate.getDate() + 7)
-      );
-      this.generateWeekView(this.viewDate);
-    } else {
-      this.viewDate = new Date(
-        this.viewDate.setDate(this.viewDate.getDate() + 1)
-      );
-      this.generateDayView(this.viewDate);
-    }
+  public next() {
+    this.viewDate = new Date(
+      this.viewDate.setMonth(this.viewDate.getMonth() + 1)
+    );
+    this.generateMonthView(this.viewDate);
   }
 
-  isToday(date: Date): boolean {
+  public isToday(date: Date): boolean {
     const today = new Date();
     return (
       date.getDate() === today.getDate() &&
@@ -169,7 +116,7 @@ export class CalendarComponent {
     );
   }
 
-  isSelected(date: Date): boolean {
+  public isSelected(date: Date): boolean {
     if (!this.selectedDate) {
       return false;
     }
@@ -180,7 +127,7 @@ export class CalendarComponent {
     );
   }
 
-  isSameDate(date1: Date, date2: Date): boolean {
+  public isSameDate(date1: Date, date2: Date): boolean {
     return (
       date1.getDate() === date2.getDate() &&
       date1.getMonth() === date2.getMonth() &&
@@ -188,7 +135,7 @@ export class CalendarComponent {
     );
   }
 
-  selectDate(date?: Date, startTime?: string) {
+  public selectDate(date?: Date, startTime?: string) {
     if (date) {
       this.selectedDate = date;
     } else {
@@ -198,55 +145,7 @@ export class CalendarComponent {
     this.openDialog();
   }
 
-  generateUUID(): string {
-    let d = new Date().getTime(); //Timestamp
-    let d2 =
-      (typeof performance !== 'undefined' &&
-        performance.now &&
-        performance.now() * 1000) ||
-      0;
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
-      /[xy]/g,
-      function (c) {
-        let r = Math.random() * 16; //random number between 0 and 16
-        if (d > 0) {
-          //Use timestamp until depleted
-          r = (d + r) % 16 | 0;
-          d = Math.floor(d / 16);
-        } else {
-          //Use microseconds since page-load if supported
-          r = (d2 + r) % 16 | 0;
-          d2 = Math.floor(d2 / 16);
-        }
-        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-      }
-    );
-  }
-
-  addAppointment(
-    date: Date,
-    title: string,
-    startTime: string,
-    endTime: string
-  ) {
-    this.appointments.push({
-      id: this.generateUUID(),
-      date,
-      title,
-      startTime,
-      endTime,
-    });
-  }
-
-  deleteAppointment(appointment: Appointment, event: Event) {
-    event.stopPropagation();
-    const index = this.appointments.indexOf(appointment);
-    if (index > -1) {
-      this.appointments.splice(index, 1);
-    }
-  }
-
-  openDialog(): void {
+  public openDialog(): void {
     const hour = new Date().getHours();
     const minutes = new Date().getMinutes();
     const h = hour < 10 ? `0${hour}` : hour;
@@ -274,59 +173,52 @@ export class CalendarComponent {
     });
   }
 
-  getAppointmentsForDate(day: Date, timeSlots: string[]) {
-    return this.appointments
-      .filter((appointment) => {
-        return this.isSameDate(appointment.date, day);
-      })
-      .map((appointment) => {
-        const startTimeIndex = timeSlots.indexOf(appointment.startTime);
-        const endTimeIndex = timeSlots.indexOf(appointment.endTime);
-        return { ...appointment, startTimeIndex, endTimeIndex };
-      });
-  }
-
-  drop(event: CdkDragDrop<Appointment[]>, date: Date, slot?: string) {
+  public drop(event: CdkDragDrop<Appointment[]>, date: Date, slot?: string) {
     const movedAppointment = event.item.data;
     movedAppointment.date = date;
     if (slot) {
       movedAppointment.startTime = slot;
       movedAppointment.endTime = slot;
     }
+
+    this.appointmentService.updateAppointment(movedAppointment);
   }
 
-  viewToday(): void {
+  public viewToday(): void {
     this.viewDate = new Date();
     this.generateMonthView(this.viewDate);
   }
 
-  isCurrentMonth(date: Date): boolean {
+  public isCurrentMonth(date: Date): boolean {
     return (
       date.getMonth() === this.viewDate.getMonth() &&
       date.getFullYear() === this.viewDate.getFullYear()
     );
   }
 
-  getAppointmentsForDateTime(date: Date, timeSlot: string): Appointment[] {
-    const appointmentsForDateTime: Appointment[] = this.appointments.filter(
-      (appointment) =>
-        this.isSameDate(appointment.date, date) &&
-        appointment.startTime <= timeSlot &&
-        appointment.endTime >= timeSlot
-    );
-
-    return appointmentsForDateTime;
+  public addAppointment(
+    date: Date,
+    title: string,
+    startTime: string,
+    endTime: string
+  ) {
+    this.appointmentService.addAppointment({
+      id: 'id-' + Date.now().toString(),
+      date,
+      title,
+      startTime,
+      endTime,
+    });
   }
 
-  getRandomColor(): string {
-    const r = Math.floor(Math.random() * 256);
-    const g = Math.floor(Math.random() * 256);
-    const b = Math.floor(Math.random() * 256);
-    const a = 0.4;
-    return `rgba(${r},${g},${b},${a})`;
+  public deleteAppointment(appointment: Appointment, event: Event) {
+    event.stopPropagation();
+    if (appointment.id) {
+      this.appointmentService.deleteAppointment(appointment.id);
+    }
   }
 
-  editAppointment(appointment: Appointment, event: Event) {
+  public editAppointment(appointment: Appointment, event: Event) {
     event.preventDefault();
     const dialogRef = this.dialog.open(DialogComponent, {
       width: '500px',
@@ -336,13 +228,10 @@ export class CalendarComponent {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        const index = this.appointments.findIndex(
-          (appointment) => appointment.id === result.uuid
-        );
         if (result.remove) {
-          this.appointments.splice(index, 1);
+          this.appointmentService.deleteAppointment(result.id);
         } else {
-          this.appointments[index] = result;
+          this.appointmentService.updateAppointment(result);
         }
       }
     });
