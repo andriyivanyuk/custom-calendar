@@ -6,6 +6,7 @@ import { DialogComponent } from '../dialog/dialog.component';
 import { Appointment } from '../interfaces/appointment';
 import { AppointmentService } from '../services/appointment.service';
 import { Observable } from 'rxjs';
+import { CreateViewService } from '../services/create-view.service';
 
 @Component({
   selector: 'app-calendar',
@@ -15,96 +16,50 @@ import { Observable } from 'rxjs';
 })
 export class CalendarComponent implements OnInit {
   weekDays: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  viewDate: Date = new Date();
-  monthDays: Date[] = [];
+  currentDate: Date = new Date();
   selectedDate: Date | null = null;
-  weeks: Date[][] = [];
 
   selectedStartTime: string | undefined;
   timeSlots: string[] = [];
 
   appointments$!: Observable<Appointment[]>;
+  weeks$!: Observable<Date[][]>;
+  monthDays$!: Observable<Date[]>;
+  timeSlots$!: Observable<string[]>;
+  viewDate$!: Observable<Date>;
 
   constructor(
     public dialog: MatDialog,
-    public appointmentService: AppointmentService
-  ) {
+    public appointmentService: AppointmentService,
+    private createViewService: CreateViewService
+  ) {}
+
+  ngOnInit(): void {
+    this.weeks$ = this.createViewService.weeks$;
+    this.monthDays$ = this.createViewService.monthDays$;
+    this.timeSlots$ = this.createViewService.timeSlots$;
+    this.viewDate$ = this.createViewService.viewDate$;
     this.appointments$ = this.appointmentService.appointments$;
   }
 
-  ngOnInit(): void {
-    this.generateMonthView(this.viewDate);
-    this.generateTimeSlots();
-  }
-
-  public generateMonthView(date: Date) {
-    const start = new Date(date.getFullYear(), date.getMonth(), 1);
-    const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    this.weeks = [];
-    this.monthDays = [];
-    let week: Date[] = [];
-
-    for (let day = start.getDay(); day > 0; day--) {
-      const prevDate = new Date(start);
-      prevDate.setDate(start.getDate() - day);
-      week.push(prevDate);
-      this.monthDays.push(prevDate);
-    }
-
-    for (let day = 1; day <= end.getDate(); day++) {
-      const currentDate = new Date(date.getFullYear(), date.getMonth(), day);
-      this.monthDays.push(currentDate);
-      week.push(currentDate);
-      if (week.length === 7) {
-        this.weeks.push(week);
-        week = [];
-      }
-    }
-
-    for (let day = 1; this.monthDays.length % 7 !== 0; day++) {
-      const nextDate = new Date(end);
-      nextDate.setDate(end.getDate() + day);
-      this.monthDays.push(nextDate);
-    }
-
-    for (let day = 1; week.length < 7; day++) {
-      const nextDate = new Date(end);
-      nextDate.setDate(end.getDate() + day);
-      week.push(nextDate);
-    }
-
-    if (week.length > 0) {
-      this.weeks.push(week);
-    }
-  }
-
-  public generateTimeSlots() {
-    for (let hour = 0; hour <= 24; hour++) {
-      const time = hour < 10 ? `0${hour}:00` : `${hour}:00`;
-      this.timeSlots.push(time);
-    }
-  }
-
-  public startOfWeek(date: Date): Date {
-    const start = new Date(date);
-    const day = start.getDay();
-    const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(start.setDate(diff));
-  }
-
   public previous() {
-    this.viewDate = new Date(
-      this.viewDate.setMonth(this.viewDate.getMonth() - 1)
+    this.createViewService.setViewDate(
+      new Date(
+        this.createViewService
+          .getViewDate()
+          .setMonth(this.createViewService.getViewDate().getMonth() - 1)
+      )
     );
-    this.generateMonthView(this.viewDate);
   }
 
   public next() {
-    this.viewDate = new Date(
-      this.viewDate.setMonth(this.viewDate.getMonth() + 1)
+    this.createViewService.setViewDate(
+      new Date(
+        this.createViewService
+          .getViewDate()
+          .setMonth(this.createViewService.getViewDate().getMonth() + 1)
+      )
     );
-    this.generateMonthView(this.viewDate);
   }
 
   public isToday(date: Date): boolean {
@@ -185,14 +140,13 @@ export class CalendarComponent implements OnInit {
   }
 
   public viewToday(): void {
-    this.viewDate = new Date();
-    this.generateMonthView(this.viewDate);
+    this.createViewService.setViewDate(new Date());
   }
 
   public isCurrentMonth(date: Date): boolean {
     return (
-      date.getMonth() === this.viewDate.getMonth() &&
-      date.getFullYear() === this.viewDate.getFullYear()
+      date.getMonth() === this.currentDate.getMonth() &&
+      date.getFullYear() === this.currentDate.getFullYear()
     );
   }
 

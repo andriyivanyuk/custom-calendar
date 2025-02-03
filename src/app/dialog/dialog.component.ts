@@ -32,7 +32,7 @@ import { CommonModule } from '@angular/common';
   ],
 })
 export class DialogComponent implements OnInit {
-  appointmentForm!: FormGroup;
+  form!: FormGroup;
 
   constructor(
     public dialogRef: MatDialogRef<DialogComponent>,
@@ -43,13 +43,16 @@ export class DialogComponent implements OnInit {
       title: string;
       startTime: string;
       endTime: string;
-      color: string;
     },
     private formBuilder: FormBuilder
   ) {}
 
   ngOnInit(): void {
-    this.appointmentForm = this.formBuilder.group(
+    this.createForm();
+  }
+
+  public createForm() {
+    this.form = this.formBuilder.group(
       {
         title: [this.data.title || '', Validators.required],
         date: [this.data.date, Validators.required],
@@ -65,12 +68,12 @@ export class DialogComponent implements OnInit {
   }
 
   public onSave(): void {
-    if (this.appointmentForm.valid) {
+    if (this.form.valid) {
       const data = {
-        title: this.appointmentForm.controls['title'].value,
-        date: this.appointmentForm.controls['date'].value,
-        startTime: this.appointmentForm.controls['startTime'].value,
-        endTime: this.appointmentForm.controls['endTime'].value,
+        title: this.form.controls['title'].value,
+        date: this.form.controls['date'].value,
+        startTime: this.form.controls['startTime'].value,
+        endTime: this.form.controls['endTime'].value,
         id: this.data.id,
       };
       this.dialogRef.close(data);
