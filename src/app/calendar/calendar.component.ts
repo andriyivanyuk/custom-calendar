@@ -20,7 +20,6 @@ export class CalendarComponent implements OnInit {
   weeks$!: Observable<Date[][]>;
   viewDate$!: Observable<Date>;
   weekDays$!: Observable<Day[]>;
-  currentDate$!: Observable<Date>;
 
   selectedDate$!: Observable<Date>;
   selectedStartTime$!: Observable<string>;
@@ -32,12 +31,11 @@ export class CalendarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.weekDays$ = this.createViewService.weekDays$;
+    this.appointments$ = this.appointmentService.appointments$;
 
+    this.weekDays$ = this.createViewService.weekDays$;
     this.weeks$ = this.createViewService.weeks$;
     this.viewDate$ = this.createViewService.viewDate$;
-    this.appointments$ = this.appointmentService.appointments$;
-    this.currentDate$ = this.createViewService.currentDate$;
     this.selectedDate$ = this.createViewService.selectedDate$;
     this.selectedStartTime$ = this.createViewService.selectedStartTime$;
   }
@@ -62,25 +60,12 @@ export class CalendarComponent implements OnInit {
     );
   }
 
-  public isToday(date: Date): boolean {
-    const today = new Date();
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    );
+  public isToday(date: Date): Observable<boolean> {
+    return this.createViewService.isToday(date);
   }
 
-  public isSelected(date: Date): Observable<boolean> {
-    return this.createViewService.isSelected(date);
-  }
-
-  public isSameDate(date1: Date, date2: Date): boolean {
-    return (
-      date1.getDate() === date2.getDate() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getFullYear() === date2.getFullYear()
-    );
+  public isSameDate(date1: Date, date2: Date): Observable<boolean> {
+    return this.createViewService.isSameDate(date1, date2);
   }
 
   public selectDate(date?: Date, startTime?: string) {

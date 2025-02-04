@@ -1,6 +1,6 @@
 import { WeekDay } from '@angular/common';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, Observable, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, of } from 'rxjs';
 import { Day } from '../interfaces/day';
 
 @Injectable()
@@ -80,25 +80,34 @@ export class CreateViewService {
     );
   }
 
+  public isToday(date: Date): Observable<boolean> {
+    return this.currentDate$.pipe(
+      map(
+        (today) =>
+          date.getDate() === today.getDate() &&
+          date.getMonth() === today.getMonth() &&
+          date.getFullYear() === today.getFullYear()
+      )
+    );
+  }
+
+  public isSameDate(date1: Date, date2: Date): Observable<boolean> {
+    return this.currentDate$.pipe(
+      map(
+        () =>
+          date1.getDate() === date2.getDate() &&
+          date1.getMonth() === date2.getMonth() &&
+          date1.getFullYear() === date2.getFullYear()
+      )
+    );
+  }
+
   public setSelectedDate(date: Date): void {
     this.selectedDateSubject.next(date);
   }
 
   public setSelectedStartTime(value: string): void {
     this.selectedStartTimeSubject.next(value);
-  }
-
-  public isSelected(date: Date): Observable<boolean> {
-    return this.selectedDate$.pipe(
-      map((selectedDate) => {
-        if (!selectedDate) return false;
-        return (
-          date.getDate() === selectedDate.getDate() &&
-          date.getMonth() === selectedDate.getMonth() &&
-          date.getFullYear() === selectedDate.getFullYear()
-        );
-      })
-    );
   }
 
   private generateMonthView(date: Date) {

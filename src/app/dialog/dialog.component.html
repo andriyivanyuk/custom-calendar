@@ -1,39 +1,69 @@
 <div class="dialog-content">
-  <h5 mat-dialog-title *ngIf="!data.id">Add Appointment</h5>
-  <h5 mat-dialog-title *ngIf="data.id">Edit Appointment</h5>
+  @if(!data.id) {
+  <h5 mat-dialog-title>Add Appointment</h5>
+  } @if(data.id) {
+  <h5 mat-dialog-title>Edit Appointment</h5>
+  }
+
   <div [formGroup]="form">
-    <div mat-dialog-content>
-      <mat-form-field class="form-field">
+    <div mat-dialog-content class="fields-wrapper">
+      <mat-form-field class="form-field-wrapper">
         <mat-label>Title</mat-label>
         <input formControlName="title" matInput />
+        @if(form.controls['title'].hasError('required') &&
+        form.controls['title'].touched) {
+        <mat-error> Title is required. </mat-error>
+        }
       </mat-form-field>
+
       <mat-form-field class="form-field">
         <mat-label>Date</mat-label>
         <input matInput [matDatepicker]="picker" formControlName="date" />
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
+
+        @if(form.controls['date'].hasError('matDatepickerParse') &&
+        form.controls['date'].touched) {
+        <mat-error> Invalid date format </mat-error>
+        } @if(form.controls['date'].hasError('required') &&
+        form.controls['date'].touched) {
+        <mat-error> Date is required </mat-error>
+        }
       </mat-form-field>
+
       <mat-form-field class="form-field">
         <mat-label>Start Time</mat-label>
         <input matInput formControlName="startTime" type="time" />
+        @if(form.controls['startTime'].hasError('required') &&
+        form.controls['startTime'].touched) {
+        <mat-error> Start time is required. </mat-error>
+        }
       </mat-form-field>
+
       <mat-form-field class="form-field">
         <mat-label>End Time</mat-label>
         <input matInput formControlName="endTime" type="time" />
+        @if(form.controls['endTime'].hasError('required') &&
+        form.controls['endTime'].touched) {
+        <mat-error> End time is required. </mat-error>
+        }
       </mat-form-field>
 
       @if(form.errors && form.errors['timeRangeInvalid']) {
-      <div class="error">End time must be after start time.</div>
+      <mat-error> End time must be after start time. </mat-error>
       }
     </div>
-    <div mat-dialog-actions align="end">
-      <button type="submit" mat-flat-button (click)="onSave()">
-        @if(data.id) {
-        <span>Edit Appointment</span>
-        } @if(!data.id) {
-        <span>Add Appointment</span>
-        }
+
+    <div mat-dialog-actions class="btn-wrapper">
+      <button
+        type="submit"
+        mat-flat-button
+        (click)="onSave()"
+        [disabled]="form.invalid"
+      >
+        <span>{{ data.id ? "Edit Appointment" : "Add Appointment" }}</span>
       </button>
+
       @if(data.id) {
       <button (click)="onDelete()" style="margin-left: 10px" mat-stroked-button>
         Delete

@@ -13,21 +13,24 @@
           mat-icon-button
           (click)="previous()"
           (keydown.enter)="previous()"
-          (keydown.space)="previous()">
+          (keydown.space)="previous()"
+        >
           <mat-icon>chevron_left</mat-icon>
         </button>
         <button
           mat-stroked-button
           (click)="viewToday()"
           (keydown.enter)="viewToday()"
-          (keydown.space)="viewToday()">
+          (keydown.space)="viewToday()"
+        >
           Today
         </button>
         <button
           mat-icon-button
           (click)="next()"
           (keydown.enter)="next()"
-          (keydown.space)="next()">
+          (keydown.space)="next()"
+        >
           <mat-icon>chevron_right</mat-icon>
         </button>
         <button
@@ -62,8 +65,11 @@
             cdkDropList
             (cdkDropListDropped)="drop($event, date)"
             [cdkDropListData]="(appointments$ | async) || []"
-            [class.today]="isToday(date)"
-            [ngClass]="(isCurrentMonth(date) | async) ? 'current-month' : 'not-current-month'">
+            [class.today]="isToday(date) | async"
+            [ngClass]="
+              (isCurrentMonth(date) | async)
+                ? 'current-month'
+                : 'not-current-month'">
             <div
               (click)="selectDate(date)"
               (keydown.enter)="selectDate(date)"
@@ -77,7 +83,7 @@
               @for (appointment of appointments$ | async; track appointment.id)
               {
               <ng-container>
-                @if(isSameDate(appointment.date, date)) {
+                @if(isSameDate(appointment.date, date) | async) {
                 <div
                   class="appointment"
                   cdkDrag
@@ -85,8 +91,7 @@
                   [cdkDragData]="appointment"
                   (click)="editAppointment(appointment, $event)"
                   (keydown.enter)="editAppointment(appointment, $event)"
-                  (keydown.space)="editAppointment(appointment, $event)"
-                >
+                  (keydown.space)="editAppointment(appointment, $event)">
                   <span>{{ appointment.title }}</span>
                 </div>
                 }
