@@ -37,7 +37,8 @@
           mat-flat-button
           (click)="selectDate()"
           (keydown.enter)="selectDate()"
-          (keydown.space)="selectDate()">
+          (keydown.space)="selectDate()"
+        >
           Add Appointment
         </button>
       </div>
@@ -47,7 +48,8 @@
       width="100%"
       cellspacing="0"
       cellpadding="0"
-      class="calendar-view-month">
+      class="calendar-view-month"
+    >
       <thead>
         <tr>
           @for (item of weekDays$ | async; track item.id) {
@@ -69,13 +71,10 @@
             [ngClass]="
               (isCurrentMonth(date) | async)
                 ? 'current-month'
-                : 'not-current-month'">
-            <div
-              (click)="selectDate(date)"
-              (keydown.enter)="selectDate(date)"
-              (keydown.space)="selectDate(date)"
-              class="cell-overlay"
-            ></div>
+                : 'not-current-month'
+            "
+          >
+            <div class="cell-overlay"></div>
             <div class="date">
               {{ date.getDate() }}
             </div>
@@ -89,10 +88,17 @@
                   cdkDrag
                   cdkDragHandle
                   [cdkDragData]="appointment"
-                  (click)="editAppointment(appointment, $event)"
                   (keydown.enter)="editAppointment(appointment, $event)"
-                  (keydown.space)="editAppointment(appointment, $event)">
+                  (keydown.space)="editAppointment(appointment, $event)"
+                >
                   <span>{{ appointment.title }}</span>
+
+                  <button
+                    mat-button
+                    [routerLink]="['/calendar/edit', appointment.id]"
+                  >
+                    Edit
+                  </button>
                 </div>
                 }
               </ng-container>
@@ -106,3 +112,4 @@
     </table>
   </div>
 </div>
+<!-- (click)="editAppointment(appointment, $event)" -->

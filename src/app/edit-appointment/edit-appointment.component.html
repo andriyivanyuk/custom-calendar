@@ -1,0 +1,66 @@
+<div class="dialog-content">
+  <div [formGroup]="form" class="fields-wrapper">
+    <div>
+      <h2>Edit current Appointment</h2>
+      <mat-form-field class="form-field-wrapper">
+        <mat-label>Title</mat-label>
+        <input formControlName="title" matInput />
+        @if(form.controls['title'].hasError('required') &&
+        form.controls['title'].touched) {
+        <mat-error> Title is required. </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field class="form-field">
+        <mat-label>Date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="date" />
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+
+        @if(form.controls['date'].hasError('matDatepickerParse') &&
+        form.controls['date'].touched) {
+        <mat-error> Invalid date format </mat-error>
+        } @if(form.controls['date'].hasError('required') &&
+        form.controls['date'].touched) {
+        <mat-error> Date is required </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field class="form-field">
+        <mat-label>Start Time</mat-label>
+        <input matInput formControlName="startTime" type="time" />
+        @if(form.controls['startTime'].hasError('required') &&
+        form.controls['startTime'].touched) {
+        <mat-error> Start time is required. </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field class="form-field">
+        <mat-label>End Time</mat-label>
+        <input matInput formControlName="endTime" type="time" />
+        @if(form.controls['endTime'].hasError('required') &&
+        form.controls['endTime'].touched) {
+        <mat-error> End time is required. </mat-error>
+        }
+      </mat-form-field>
+
+      @if(form.errors && form.errors['timeRangeInvalid']) {
+      <mat-error> End time must be after start time. </mat-error>
+      }
+    </div>
+
+    <div class="btn-wrapper">
+      <button
+        type="submit"
+        mat-flat-button
+        (click)="edit()"
+        [disabled]="form.invalid">
+        Edit
+      </button>
+
+      <button [routerLink]="['/calendar']" mat-flat-button>
+        Back to the list
+      </button>
+    </div>
+  </div>
+</div>

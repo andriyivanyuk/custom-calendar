@@ -5,6 +5,8 @@ import { Day } from '../interfaces/day';
 
 @Injectable()
 export class CreateViewService {
+  private dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
   private viewDateSource = new BehaviorSubject<Date>(new Date());
   private weeksSource = new BehaviorSubject<Date[][]>([]);
   private monthDaysSource = new BehaviorSubject<Date[]>([]);
@@ -25,40 +27,19 @@ export class CreateViewService {
   public selectedStartTime$: Observable<string> =
     this.selectedStartTimeSubject.asObservable();
 
-  public weekDays$: Observable<Day[]> = of([
-    {
-      id: 1,
-      day: 'Sun',
-    },
-    {
-      id: 2,
-      day: 'Mon',
-    },
-    {
-      id: 3,
-      day: 'Tue',
-    },
-    {
-      id: 4,
-      day: 'Wed',
-    },
-    {
-      id: 5,
-      day: 'Thu',
-    },
-    {
-      id: 6,
-      day: 'Fri',
-    },
-    {
-      id: 7,
-      day: 'Sat',
-    },
-  ]);
+  public weekDays$: Observable<Day[]> = this.getWeekDays();
 
   constructor() {
     this.generateMonthView(this.viewDateSource.value);
     this.generateTimeSlots();
+  }
+
+  getWeekDays(): Observable<Day[]> {
+    const daysOfWeek = this.dayNames.map((day, index) => ({
+      id: index + 1,
+      day: day,
+    }));
+    return of(daysOfWeek);
   }
 
   public setViewDate(date: Date) {

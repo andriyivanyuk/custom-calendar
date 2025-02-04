@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { DialogComponent } from '../dialog/dialog.component';
-import { Appointment } from '../interfaces/appointment';
-import { AppointmentService } from '../services/appointment.service';
+import { DialogComponent } from '../../../dialog/dialog.component';
+import { Appointment } from '../../../interfaces/appointment';
+import { AppointmentService } from '../../../services/appointment.service';
 import { combineLatest, Observable, take } from 'rxjs';
-import { CreateViewService } from '../services/create-view.service';
-import { Day } from '../interfaces/day';
+import { CreateViewService } from '../../../services/create-view.service';
+import { Day } from '../../../interfaces/day';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-calendar',
@@ -27,7 +28,8 @@ export class CalendarComponent implements OnInit {
   constructor(
     public dialog: MatDialog,
     public appointmentService: AppointmentService,
-    private createViewService: CreateViewService
+    private createViewService: CreateViewService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {

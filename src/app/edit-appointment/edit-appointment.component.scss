@@ -1,0 +1,15 @@
+mat-form-field {
+  width: 100%;
+}
+
+.btn-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  column-gap: 1rem;
+  margin-top: 10px;
+}
+
+.fields-wrapper {
+  max-width: 600px;
+  margin: 25px auto;
+}

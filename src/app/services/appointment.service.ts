@@ -27,4 +27,9 @@ export class AppointmentService {
       .filter((appt) => appt.id !== appointmentId);
     this.appointmentsSubject.next(filteredAppointments);
   }
+
+  public getAppointmentById(appointmentId: string): Appointment | undefined {
+    const appointments = this.appointmentsSubject.getValue();
+    return appointments.find((appt) => appt.id === appointmentId);
+  }
 }
