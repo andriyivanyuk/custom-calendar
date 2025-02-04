@@ -1,5 +1,7 @@
+import { WeekDay } from '@angular/common';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable, of } from 'rxjs';
+import { Day } from '../interfaces/day';
 
 @Injectable()
 export class CreateViewService {
@@ -7,11 +9,52 @@ export class CreateViewService {
   private weeksSource = new BehaviorSubject<Date[][]>([]);
   private monthDaysSource = new BehaviorSubject<Date[]>([]);
   private timeSlotsSource = new BehaviorSubject<string[]>([]);
+  private currentDateSubject = new BehaviorSubject<Date>(new Date());
+  private selectedDateSubject = new BehaviorSubject<Date>(new Date());
+  private selectedStartTimeSubject = new BehaviorSubject<string>('');
 
   public viewDate$: Observable<Date> = this.viewDateSource.asObservable();
   public weeks$: Observable<Date[][]> = this.weeksSource.asObservable();
   public monthDays$: Observable<Date[]> = this.monthDaysSource.asObservable();
   public timeSlots$: Observable<string[]> = this.timeSlotsSource.asObservable();
+
+  public currentDate$: Observable<Date> =
+    this.currentDateSubject.asObservable();
+  public selectedDate$: Observable<Date> =
+    this.selectedDateSubject.asObservable();
+  public selectedStartTime$: Observable<string> =
+    this.selectedStartTimeSubject.asObservable();
+
+  public weekDays$: Observable<Day[]> = of([
+    {
+      id: 1,
+      day: 'Sun',
+    },
+    {
+      id: 2,
+      day: 'Mon',
+    },
+    {
+      id: 3,
+      day: 'Tue',
+    },
+    {
+      id: 4,
+      day: 'Wed',
+    },
+    {
+      id: 5,
+      day: 'Thu',
+    },
+    {
+      id: 6,
+      day: 'Fri',
+    },
+    {
+      id: 7,
+      day: 'Sat',
+    },
+  ]);
 
   constructor() {
     this.generateMonthView(this.viewDateSource.value);
@@ -25,6 +68,37 @@ export class CreateViewService {
 
   public getViewDate(): Date {
     return this.viewDateSource.value;
+  }
+
+  public isCurrentMonth(date: Date): Observable<boolean> {
+    return this.currentDate$.pipe(
+      map(
+        (currentDate) =>
+          date.getMonth() === currentDate.getMonth() &&
+          date.getFullYear() === currentDate.getFullYear()
+      )
+    );
+  }
+
+  public setSelectedDate(date: Date): void {
+    this.selectedDateSubject.next(date);
+  }
+
+  public setSelectedStartTime(value: string): void {
+    this.selectedStartTimeSubject.next(value);
+  }
+
+  public isSelected(date: Date): Observable<boolean> {
+    return this.selectedDate$.pipe(
+      map((selectedDate) => {
+        if (!selectedDate) return false;
+        return (
+          date.getDate() === selectedDate.getDate() &&
+          date.getMonth() === selectedDate.getMonth() &&
+          date.getFullYear() === selectedDate.getFullYear()
+        );
+      })
+    );
   }
 
   private generateMonthView(date: Date) {

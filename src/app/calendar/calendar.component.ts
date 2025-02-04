@@ -5,8 +5,9 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DialogComponent } from '../dialog/dialog.component';
 import { Appointment } from '../interfaces/appointment';
 import { AppointmentService } from '../services/appointment.service';
-import { Observable } from 'rxjs';
+import { combineLatest, Observable, take } from 'rxjs';
 import { CreateViewService } from '../services/create-view.service';
+import { Day } from '../interfaces/day';
 
 @Component({
   selector: 'app-calendar',
@@ -15,18 +16,14 @@ import { CreateViewService } from '../services/create-view.service';
   standalone: false,
 })
 export class CalendarComponent implements OnInit {
-  weekDays: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  currentDate: Date = new Date();
-  selectedDate: Date | null = null;
-
-  selectedStartTime: string | undefined;
-  timeSlots: string[] = [];
-
   appointments$!: Observable<Appointment[]>;
   weeks$!: Observable<Date[][]>;
-  monthDays$!: Observable<Date[]>;
-  timeSlots$!: Observable<string[]>;
   viewDate$!: Observable<Date>;
+  weekDays$!: Observable<Day[]>;
+  currentDate$!: Observable<Date>;
+
+  selectedDate$!: Observable<Date>;
+  selectedStartTime$!: Observable<string>;
 
   constructor(
     public dialog: MatDialog,
@@ -35,11 +32,14 @@ export class CalendarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.weekDays$ = this.createViewService.weekDays$;
+
     this.weeks$ = this.createViewService.weeks$;
-    this.monthDays$ = this.createViewService.monthDays$;
-    this.timeSlots$ = this.createViewService.timeSlots$;
     this.viewDate$ = this.createViewService.viewDate$;
     this.appointments$ = this.appointmentService.appointments$;
+    this.currentDate$ = this.createViewService.currentDate$;
+    this.selectedDate$ = this.createViewService.selectedDate$;
+    this.selectedStartTime$ = this.createViewService.selectedStartTime$;
   }
 
   public previous() {
@@ -71,15 +71,8 @@ export class CalendarComponent implements OnInit {
     );
   }
 
-  public isSelected(date: Date): boolean {
-    if (!this.selectedDate) {
-      return false;
-    }
-    return (
-      date.getDate() === this.selectedDate.getDate() &&
-      date.getMonth() === this.selectedDate.getMonth() &&
-      date.getFullYear() === this.selectedDate.getFullYear()
-    );
+  public isSelected(date: Date): Observable<boolean> {
+    return this.createViewService.isSelected(date);
   }
 
   public isSameDate(date1: Date, date2: Date): boolean {
@@ -92,40 +85,14 @@ export class CalendarComponent implements OnInit {
 
   public selectDate(date?: Date, startTime?: string) {
     if (date) {
-      this.selectedDate = date;
+      this.createViewService.setSelectedDate(date);
     } else {
-      this.selectedDate = new Date();
+      this.createViewService.setSelectedDate(new Date());
     }
-    this.selectedStartTime = startTime;
+    if (startTime) {
+      this.createViewService.setSelectedStartTime(startTime);
+    }
     this.openDialog();
-  }
-
-  public openDialog(): void {
-    const hour = new Date().getHours();
-    const minutes = new Date().getMinutes();
-    const h = hour < 10 ? `0${hour}` : hour;
-    const m = minutes < 10 ? `0${minutes}` : minutes;
-    const dialogRef = this.dialog.open(DialogComponent, {
-      width: '500px',
-      panelClass: 'dialog-container',
-      data: {
-        date: this.selectedDate,
-        title: '',
-        startTime: this.selectedStartTime || `${h}:${m}`,
-        endTime: this.selectedStartTime || `${h}:${m}`,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.addAppointment(
-          result.date,
-          result.title,
-          result.startTime,
-          result.endTime
-        );
-      }
-    });
   }
 
   public drop(event: CdkDragDrop<Appointment[]>, date: Date, slot?: string) {
@@ -143,11 +110,8 @@ export class CalendarComponent implements OnInit {
     this.createViewService.setViewDate(new Date());
   }
 
-  public isCurrentMonth(date: Date): boolean {
-    return (
-      date.getMonth() === this.currentDate.getMonth() &&
-      date.getFullYear() === this.currentDate.getFullYear()
-    );
+  public isCurrentMonth(date: Date): Observable<boolean> {
+    return this.createViewService.isCurrentMonth(date);
   }
 
   public addAppointment(
@@ -189,5 +153,40 @@ export class CalendarComponent implements OnInit {
         }
       }
     });
+  }
+
+  public openDialog(): void {
+    combineLatest([this.selectedDate$, this.selectedStartTime$])
+      .pipe(take(1))
+      .subscribe(([selectedDate, selectedStartTime]) => {
+        if (!selectedDate) return;
+
+        const hour = new Date().getHours();
+        const minutes = new Date().getMinutes();
+        const h = hour < 10 ? `0${hour}` : hour;
+        const m = minutes < 10 ? `0${minutes}` : minutes;
+
+        const dialogRef = this.dialog.open(DialogComponent, {
+          width: '500px',
+          panelClass: 'dialog-container',
+          data: {
+            date: selectedDate,
+            title: '',
+            startTime: selectedStartTime || `${h}:${m}`,
+            endTime: selectedStartTime || `${h}:${m}`,
+          },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+          if (result) {
+            this.addAppointment(
+              result.date,
+              result.title,
+              result.startTime,
+              result.endTime
+            );
+          }
+        });
+      });
   }
 }
