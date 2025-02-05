@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { timeFormatValidator } from '../validators/date-validator';
-import { timeRangeValidator } from '../validators/range-validator';
-import { AppointmentService } from '../services/appointment.service';
-import { map, Observable, Subject, takeUntil } from 'rxjs';
-import { Appointment } from '../interfaces/appointment';
+import { timeFormatValidator } from '../../../validators/date-validator';
+import { timeRangeValidator } from '../../../validators/range-validator';
+import { map, Observable, Subject, takeUntil, tap } from 'rxjs';
+import { Appointment } from '../../../interfaces/appointment';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AppointmentService } from '../../services/appointment.service';
 
 @Component({
   selector: 'app-edit-appointment',
@@ -33,6 +33,29 @@ export class EditAppointmentComponent implements OnInit, OnDestroy {
       map((id) => this.appointmentService.getAppointmentById(id))
     );
     this.presetForm();
+    this.handleTimeRange();
+  }
+
+  public handleTimeRange() {
+    const startTimeControl = this.form.get('startTime');
+    if (startTimeControl) {
+      startTimeControl.valueChanges
+        .pipe(
+          takeUntil(this.destroy$),
+          tap(() => this.form.updateValueAndValidity())
+        )
+        .subscribe();
+    }
+
+    const endTimeControl = this.form.get('endTime');
+    if (endTimeControl) {
+      endTimeControl.valueChanges
+        .pipe(
+          takeUntil(this.destroy$),
+          tap(() => this.form.updateValueAndValidity())
+        )
+        .subscribe();
+    }
   }
 
   public presetForm() {

@@ -1,7 +1,6 @@
-import { WeekDay } from '@angular/common';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, map, Observable, of } from 'rxjs';
-import { Day } from '../interfaces/day';
+import { Day } from '../../interfaces/day';
 
 @Injectable()
 export class CreateViewService {

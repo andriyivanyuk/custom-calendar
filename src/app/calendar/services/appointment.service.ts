@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Appointment } from '../interfaces/appointment';
 import { BehaviorSubject } from 'rxjs';
+import { Appointment } from '../../interfaces/appointment';
 
 @Injectable()
 export class AppointmentService {

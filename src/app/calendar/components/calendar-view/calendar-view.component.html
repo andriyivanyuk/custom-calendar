@@ -13,32 +13,28 @@
           mat-icon-button
           (click)="previous()"
           (keydown.enter)="previous()"
-          (keydown.space)="previous()"
-        >
+          (keydown.space)="previous()">
           <mat-icon>chevron_left</mat-icon>
         </button>
         <button
           mat-stroked-button
           (click)="viewToday()"
           (keydown.enter)="viewToday()"
-          (keydown.space)="viewToday()"
-        >
+          (keydown.space)="viewToday()">
           Today
         </button>
         <button
           mat-icon-button
           (click)="next()"
           (keydown.enter)="next()"
-          (keydown.space)="next()"
-        >
+          (keydown.space)="next()">
           <mat-icon>chevron_right</mat-icon>
         </button>
         <button
           mat-flat-button
           (click)="selectDate()"
           (keydown.enter)="selectDate()"
-          (keydown.space)="selectDate()"
-        >
+          (keydown.space)="selectDate()">
           Add Appointment
         </button>
       </div>
@@ -48,8 +44,7 @@
       width="100%"
       cellspacing="0"
       cellpadding="0"
-      class="calendar-view-month"
-    >
+      class="calendar-view-month">
       <thead>
         <tr>
           @for (item of weekDays$ | async; track item.id) {
@@ -71,9 +66,7 @@
             [ngClass]="
               (isCurrentMonth(date) | async)
                 ? 'current-month'
-                : 'not-current-month'
-            "
-          >
+                : 'not-current-month'">
             <div class="cell-overlay"></div>
             <div class="date">
               {{ date.getDate() }}
@@ -87,16 +80,12 @@
                   class="appointment"
                   cdkDrag
                   cdkDragHandle
-                  [cdkDragData]="appointment"
-                  (keydown.enter)="editAppointment(appointment, $event)"
-                  (keydown.space)="editAppointment(appointment, $event)"
-                >
+                  [cdkDragData]="appointment">
                   <span>{{ appointment.title }}</span>
 
                   <button
                     mat-button
-                    [routerLink]="['/calendar/edit', appointment.id]"
-                  >
+                    [routerLink]="['/calendar/edit', appointment.id]">
                     Edit
                   </button>
                 </div>
@@ -112,4 +101,3 @@
     </table>
   </div>
 </div>
-<!-- (click)="editAppointment(appointment, $event)" -->

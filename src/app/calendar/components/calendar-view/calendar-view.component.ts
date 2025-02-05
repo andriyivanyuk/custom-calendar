@@ -4,19 +4,18 @@ import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DialogComponent } from '../../../dialog/dialog.component';
 import { Appointment } from '../../../interfaces/appointment';
-import { AppointmentService } from '../../../services/appointment.service';
 import { combineLatest, Observable, take } from 'rxjs';
-import { CreateViewService } from '../../../services/create-view.service';
 import { Day } from '../../../interfaces/day';
-import { Router } from '@angular/router';
+import { AppointmentService } from '../../services/appointment.service';
+import { CreateViewService } from '../../services/create-view.service';
 
 @Component({
   selector: 'app-calendar',
-  templateUrl: './calendar.component.html',
-  styleUrls: ['./calendar.component.scss'],
+  templateUrl: './calendar-view.component.html',
+  styleUrls: ['./calendar-view.component.scss'],
   standalone: false,
 })
-export class CalendarComponent implements OnInit {
+export class CalendarViewComponent implements OnInit {
   appointments$!: Observable<Appointment[]>;
   weeks$!: Observable<Date[][]>;
   viewDate$!: Observable<Date>;
@@ -28,13 +27,11 @@ export class CalendarComponent implements OnInit {
   constructor(
     public dialog: MatDialog,
     public appointmentService: AppointmentService,
-    private createViewService: CreateViewService,
-    private router: Router
+    private createViewService: CreateViewService
   ) {}
 
   ngOnInit(): void {
     this.appointments$ = this.appointmentService.appointments$;
-
     this.weekDays$ = this.createViewService.weekDays$;
     this.weeks$ = this.createViewService.weeks$;
     this.viewDate$ = this.createViewService.viewDate$;
